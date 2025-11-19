@@ -1,20 +1,27 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ResetPassword = () => {
   const [formData, setFormData] = useState({
+    otp: '',
     newPassword: '',
     confirmPassword: ''
   });
-  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const { resetPassword } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { userId, email } = location.state || {};
+  const { userId } = location.state || {};
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +37,7 @@ const ResetPassword = () => {
     try {
       await resetPassword({
         userId,
-        otp,
+        otp: formData.otp,
         newPassword: formData.newPassword
       });
       setMessage('Password reset successfully!');
@@ -48,7 +55,10 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="max-w-md w-full p-6 bg-white rounded-lg shadow">
-          <p className="text-red-600">Invalid access. Please request password reset first.</p>
+          <p className="text-red-600">Invalid access. Please request a password reset first.</p>
+          <Link to="/forgot-password" className="text-blue-600 hover:text-blue-500">
+            Go to Forgot Password
+          </Link>
         </div>
       </div>
     );
@@ -62,7 +72,7 @@ const ResetPassword = () => {
             Reset Password
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Enter the OTP sent to {email} and your new password
+            Enter the OTP and your new password
           </p>
         </div>
 
@@ -88,8 +98,8 @@ const ResetPassword = () => {
               required
               className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               placeholder="Enter OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
+              value={formData.otp}
+              onChange={handleChange}
               maxLength="6"
             />
           </div>
@@ -104,9 +114,9 @@ const ResetPassword = () => {
               type="password"
               required
               className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="New password"
+              placeholder="Enter new password"
               value={formData.newPassword}
-              onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+              onChange={handleChange}
               minLength="6"
             />
           </div>
@@ -123,7 +133,7 @@ const ResetPassword = () => {
               className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               placeholder="Confirm new password"
               value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              onChange={handleChange}
               minLength="6"
             />
           </div>
@@ -136,6 +146,12 @@ const ResetPassword = () => {
             >
               {loading ? 'Resetting Password...' : 'Reset Password'}
             </button>
+          </div>
+
+          <div className="text-center">
+            <Link to="/signin" className="font-medium text-blue-600 hover:text-blue-500">
+              Back to Sign In
+            </Link>
           </div>
         </form>
       </div>

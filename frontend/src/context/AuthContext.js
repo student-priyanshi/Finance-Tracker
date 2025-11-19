@@ -1,5 +1,5 @@
-import axios from 'axios';
-import { createContext, useContext, useEffect, useState } from 'react';
+import axios from "axios";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
 
@@ -16,118 +16,94 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  // ✅ FIXED: Use environment variable for API URL
-  axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'https://finance-tracker-exlv.onrender.com';
-
-  // Set auth token for axios
+  // Set axios default base URL and headers
   useEffect(() => {
+    axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      localStorage.setItem('token', token);
+      fetchUserProfile();
     } else {
-      delete axios.defaults.headers.common['Authorization'];
-      localStorage.removeItem('token');
+      setLoading(false);
     }
   }, [token]);
 
-  // Check if user is authenticated on app load
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (token) {
-        try {
-          const response = await axios.get('/api/profile');
-          setUser(response.data);
-        } catch (error) {
-          console.error('Auth check failed:', error);
-          localStorage.removeItem('token');
-          setToken(null);
-        }
-      }
+  const fetchUserProfile = async () => {
+    try {
+      const response = await axios.get('/api/profile');
+      setUser(response.data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      logout();
+    } finally {
       setLoading(false);
-    };
-
-    checkAuth();
-  }, [token]);
+    }
+  };
 
   const signup = async (userData) => {
-    try {
-      const response = await axios.post('/api/auth/signup', userData);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || { message: 'Signup failed' };
-    }
+    const response = await axios.post('/api/auth/signup', userData);
+    return response.data;
   };
 
   const verifyOTP = async (otpData) => {
-    try {
-      const response = await axios.post('/api/auth/verify-otp', otpData);
-      if (response.data.token) {
-        setToken(response.data.token);
-        setUser(response.data.user);
-      }
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || { message: 'OTP verification failed' };
+    const response = await axios.post('/api/auth/verify-otp', otpData);
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      setToken(response.data.token);
+      setUser(response.data.user);
     }
+    return response.data;
   };
 
-  const signin = async (credentials) => {
-    try {
-      const response = await axios.post('/api/auth/signin', credentials);
-      if (response.data.token) {
-        setToken(response.data.token);
-        setUser(response.data.user);
-      }
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || { message: 'Signin failed' };
+  const login = async (credentials) => {
+    const response = await axios.post('/api/auth/login', credentials);
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      setToken(response.data.token);
+      setUser(response.data.user);
     }
-  };
-
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('token');
+    return response.data;
   };
 
   const forgotPassword = async (email) => {
-    try {
-      const response = await axios.post('/api/auth/forgot-password', { email });
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || { message: 'Password reset failed' };
-    }
+    const response = await axios.post('/api/auth/forgot-password', { email });
+    return response.data;
   };
 
-  const resetPassword = async (resetData) => {
-    try {
-      const response = await axios.post('/api/auth/reset-password', resetData);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || { message: 'Password reset failed' };
-    }
+  const resetPassword = async (passwordData) => {
+    const response = await axios.post('/api/auth/reset-password', passwordData);
+    return response.data;
   };
 
   const changePassword = async (passwordData) => {
-    try {
-      const response = await axios.post('/api/auth/change-password', passwordData);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || { message: 'Password change failed' };
-    }
+    const response = await axios.put('/api/profile/change-password', passwordData);
+    return response.data;
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
+    delete axios.defaults.headers.common['Authorization'];
+  };
+
+  const updateProfile = async (profileData) => {
+    const response = await axios.put('/api/profile', profileData);
+    setUser(response.data.user);
+    return response.data;
   };
 
   const value = {
     user,
-    token,
     loading,
     signup,
     verifyOTP,
-    signin,
+    login,
     logout,
     forgotPassword,
     resetPassword,
-    changePassword
+    changePassword,
+    updateProfile
   };
 
   return (

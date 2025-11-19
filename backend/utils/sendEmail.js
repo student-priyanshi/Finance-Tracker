@@ -1,21 +1,24 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
-const sendEmail = async (email, subject, text) => {
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+  tls: { rejectUnauthorized: false }
+});
+
+module.exports = async (to, subject, text) => {
   try {
-    // Development mode - just log to console
-    console.log('=== DEVELOPMENT MODE: Email Log ===');
-    console.log('To:', email);
-    console.log('Subject:', subject);
-    console.log('Body:', text);
-    console.log('OTP Code:', text.match(/\d{6}/)?.[0] || 'Check the message above');
-    console.log('==================================');
-    
-    // For now, just return true to simulate successful email
-    return true;
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to,
+      subject,
+      text
+    });
+    console.log("EMAIL SENT SUCCESSFULLY");
   } catch (error) {
-    console.log('Email simulation error:', error);
-    return false;
+    console.log("EMAIL ERROR:", error.message);
   }
 };
-
-module.exports = sendEmail;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -9,7 +9,7 @@ const Signin = () => {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const { signin } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -25,7 +25,7 @@ const Signin = () => {
     setMessage('');
 
     try {
-      await signin(formData);
+      await login(formData);
       navigate('/');
     } catch (error) {
       setMessage(error.response?.data?.message || 'Error signing in');

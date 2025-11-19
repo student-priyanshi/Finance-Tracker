@@ -1,10 +1,14 @@
 const Transaction = require('../models/Transaction');
+const mongoose = require('mongoose');
 
-// Add transaction
 exports.addTransaction = async (req, res) => {
   try {
     const { type, description, amount, category, date } = req.body;
     
+    if (!type || !description || !amount) {
+      return res.status(400).json({ message: 'Type, description, and amount are required' });
+    }
+
     const transaction = new Transaction({
       user: req.user.id,
       type,
@@ -25,7 +29,6 @@ exports.addTransaction = async (req, res) => {
   }
 };
 
-// Get transactions with filters, sorting, and pagination
 exports.getTransactions = async (req, res) => {
   try {
     const { 
@@ -40,7 +43,6 @@ exports.getTransactions = async (req, res) => {
       sortOrder = 'desc'
     } = req.query;
 
-    // Build filter object
     const filter = { user: req.user.id };
     
     if (type) filter.type = type;
@@ -55,18 +57,14 @@ exports.getTransactions = async (req, res) => {
       if (maxAmount) filter.amount.$lte = parseFloat(maxAmount);
     }
 
-    // Calculate pagination
     const skip = (page - 1) * limit;
-
-    // Build sort object
     const sort = {};
     sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
     const transactions = await Transaction.find(filter)
       .sort(sort)
       .skip(skip)
-      .limit(parseInt(limit))
-      .lean();
+      .limit(parseInt(limit));
 
     const total = await Transaction.countDocuments(filter);
 
@@ -81,11 +79,12 @@ exports.getTransactions = async (req, res) => {
   }
 };
 
-// Get transaction summary
 exports.getSummary = async (req, res) => {
   try {
+    const userId = req.user.id;
+    
     const result = await Transaction.aggregate([
-      { $match: { user: req.user._id } },
+      { $match: { user: new mongoose.Types.ObjectId(userId) } },
       {
         $group: {
           _id: '$type',
@@ -102,7 +101,11 @@ exports.getSummary = async (req, res) => {
     };
 
     result.forEach(item => {
-      summary[item._id] = item.total;
+      if (item._id === 'income') {
+        summary.income = item.total;
+      } else if (item._id === 'expense') {
+        summary.expense = item.total;
+      }
     });
 
     summary.balance = summary.income - summary.expense;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,7 +10,7 @@ const VerifyOTP = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { userId, email } = location.state || {};
+  const { userId, email, isPasswordReset } = location.state || {};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +20,12 @@ const VerifyOTP = () => {
     try {
       const result = await verifyOTP({ userId, otp });
       setMessage(result.message);
-      navigate('/');
+      
+      if (isPasswordReset) {
+        navigate('/reset-password', { state: { userId, email } });
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       setMessage(error.response?.data?.message || 'Error verifying OTP');
     } finally {

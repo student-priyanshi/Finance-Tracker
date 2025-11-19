@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import TransactionForm from '../components/TransactionForm';
-import TransactionFilters from '../components/TransactionFilters';
+import { useEffect, useState } from 'react';
 import SummaryCard from '../components/SummaryCard';
+import TransactionFilters from '../components/TransactionFilters';
+import TransactionForm from '../components/TransactionForm';
 
 const Home = () => {
   const [transactions, setTransactions] = useState([]);
@@ -77,16 +77,14 @@ const Home = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-6 px-4">
+    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Finance Tracker</h1>
         <p className="mt-2 text-gray-600">Manage your income and expenses</p>
       </div>
 
       {/* Summary Cards */}
-      <div className="mb-8">
-        <SummaryCard summary={summary} />
-      </div>
+      <SummaryCard summary={summary} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Transaction Form */}
