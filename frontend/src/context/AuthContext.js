@@ -1,5 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const AuthContext = createContext();
 
@@ -16,8 +16,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  // Set base URL for axios
-  axios.defaults.baseURL = 'http://localhost:5000';
+  // ✅ FIXED: Use environment variable for API URL
+  axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'https://finance-tracker-exlv.onrender.com';
 
   // Set auth token for axios
   useEffect(() => {
