@@ -15,7 +15,7 @@ app.use('/api/transactions', require('./routes/transactions'));
 app.use('/api/profile', require('./routes/profile'));
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/finance-tracker', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://ypriyanshi399_db_user:P4eLvsH7Hj2moS5L@cluster0.769uwlu.mongodb.net/?appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
@@ -23,4 +23,6 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/finance-t
 .catch(err => console.log(err));
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running on port ${PORT}`);
+});
