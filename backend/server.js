@@ -7,15 +7,19 @@ const path = require('path');
 const app = express();
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://finance-tracker-git-main-priyanshi-yadavs-projects.vercel.app'
+];
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 
-// ROUTES
-app.use('/api/auth', require('./routes/auth')); 
+// Routes
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/profile', require('./routes/profile'));
 app.use('/api/transactions', require('./routes/transactions'));
 
-// Serve static files in production
+// Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
   const frontendBuildPath = path.join(__dirname, '..', 'frontend', 'build');
   app.use(express.static(frontendBuildPath));
@@ -25,15 +29,12 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// DATABASE
+// Database
 const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/finance-tracker';
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.log('MongoDB connection error:', err));
 
-// START SERVER
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
